@@ -19,12 +19,15 @@ async function checkSession() {
     const data = await response.json();
 
     if (response.status === 403) {
-      alert("Сессия истекла, выполните повторный вход.");
+      showNotification("Сессия истекла, выполните повторный вход.", "error");
       localStorage.removeItem("token");
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000); // Даем время прочитать сообщение перед перезагрузкой
     }
   } catch (error) {
     console.error("Ошибка проверки сессии:", error);
+    showNotification("Ошибка проверки сессии", "error");
   }
 }
 
@@ -54,13 +57,13 @@ loginForm.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (response.ok) {
-      alert(data.message);
+      showNotification("Код подтверждения отправлен на вашу почту", "success");
       otpContainer.style.display = "block";
     } else {
-      alert(`Ошибка: ${data.error}`);
+      showNotification(data.error || "Ошибка при входе", "error");
     }
   } catch (error) {
-    alert(`Ошибка: ${error.message}`);
+    showNotification("Ошибка при входе в систему", "error");
   }
 });
 
@@ -82,7 +85,7 @@ verifyOtpButton.addEventListener("click", async () => {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Авторизация успешна!");
+      showNotification("Авторизация успешна!", "success");
       localStorage.setItem("token", data.token);
       localStorage.setItem("userRole", data.role); // Store user role
 
@@ -93,10 +96,10 @@ verifyOtpButton.addEventListener("click", async () => {
         window.location.reload();
       }
     } else {
-      alert(`Ошибка: ${data.error}`);
+      showNotification(data.error || "Ошибка при подтверждении OTP", "error");
     }
   } catch (error) {
-    alert(`Ошибка: ${error.message}`);
+    showNotification("Ошибка при подтверждении OTP", "error");
   }
 });
 
@@ -115,19 +118,19 @@ registerButton.addEventListener("click", async () => {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Регистрация успешна");
+      showNotification("Регистрация успешна", "success");
       localStorage.setItem("token", data.token);
     } else {
-      alert("Ошибка: " + data.error);
+      showNotification("Ошибка: " + data.error, "error");
     }
   } catch (error) {
-    alert("Ошибка: " + error.message);
+    showNotification("Ошибка: " + error.message, "error");
   }
 });
 
 // Выход из системы
 logoutButton.addEventListener("click", () => {
   localStorage.removeItem("token");
-  alert("Вы вышли из системы");
+  showNotification("Вы вышли из системы", "success");
   window.location.reload();
 });

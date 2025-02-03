@@ -1,19 +1,28 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Add event listeners to all buy buttons
   document.querySelectorAll(".buy-membership").forEach((button) => {
-    button.addEventListener("click", handleMembershipPurchase);
+    button.addEventListener("click", handleMembershipClick);
   });
 });
 
-async function handleMembershipPurchase(event) {
-  // Check authorization only when trying to purchase
+// Separate function to handle initial click
+function handleMembershipClick(event) {
   const token = localStorage.getItem("token");
   if (!token) {
-    alert("Пожалуйста, войдите в систему для совершения платежей");
-    window.location.href = "/form.html";
+    showNotification(
+      "Для покупки абонемента необходимо авторизоваться",
+      "error"
+    );
+    setTimeout(() => {
+      window.location.href = "/form.html";
+    }, 2000); // Wait 2 seconds before redirecting
     return;
   }
+  handleMembershipPurchase(event);
+}
 
+async function handleMembershipPurchase(event) {
+  const token = localStorage.getItem("token");
   const membershipType = event.target.dataset.type;
 
   try {
@@ -32,12 +41,12 @@ async function handleMembershipPurchase(event) {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Абонемент успешно приобретен!");
+      showNotification("Абонемент успешно приобретен!", "success");
     } else {
-      alert(`Ошибка: ${data.error}`);
+      showNotification(`Ошибка: ${data.error}`, "error");
     }
   } catch (error) {
-    alert("Произошла ошибка при обработке платежа");
+    showNotification("Произошла ошибка при обработке платежа", "error");
     console.error("Error:", error);
   }
 }

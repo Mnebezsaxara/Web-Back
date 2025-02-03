@@ -1645,3 +1645,64 @@ section .row {
         transform: rotate(360deg);
     }
 }
+
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: #ffffff;
+    border-left: 4px solid #4caf50;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 300px;
+    max-width: 400px;
+    animation: slideIn 0.5s ease-out;
+}
+
+.notification.error {
+    border-left-color: #dc3545;
+    background-color: #fff;
+}
+
+.notification.success {
+    border-left-color: #28a745;
+    background-color: #fff;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+.notification-message {
+    margin-right: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #000000;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

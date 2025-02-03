@@ -55,13 +55,14 @@ document
         throw new Error(data.error || "Failed to create booking");
       }
 
-      alert(
-        "Бронирование успешно создано! Перейдите в 'Посмотреть бронирования' для оплаты."
+      showNotification(
+        "Бронирование успешно создано! Перейдите в 'Посмотреть бронирования' для оплаты.",
+        "success"
       );
       document.getElementById("booking-form").reset();
     } catch (error) {
       console.error("Error details:", error);
-      alert("Ошибка: " + error.message);
+      showNotification(error.message, "error");
     }
   });
 
@@ -73,7 +74,10 @@ async function fetchBookings(page = 1, sort = "", filter = "") {
   if (filter) url.searchParams.append("filter", filter);
 
   if (!isAuthenticated()) {
-    alert("Вы должны авторизоваться, чтобы управлять бронированием.");
+    showNotification(
+      "Вы должны авторизоваться, чтобы управлять бронированием.",
+      "error"
+    );
     return;
   }
 
@@ -90,11 +94,11 @@ async function fetchBookings(page = 1, sort = "", filter = "") {
       renderBookingsTable(bookings.data); // Отобразить таблицу с бронированиями
       renderPagination(bookings.totalPages, page, sort, filter); // Отобразить пагинацию
     } else {
-      alert("Ошибка при получении бронирований.");
+      showNotification("Ошибка при получении бронирований.", "error");
     }
   } catch (error) {
     console.error("Ошибка при получении бронирований:", error);
-    alert("Ошибка при загрузке бронирований.");
+    showNotification("Ошибка при загрузке бронирований.", "error");
   }
 }
 
@@ -163,21 +167,18 @@ document.getElementById("view-bookings").addEventListener("click", () => {
   fetchBookings();
 });
 
-// Кнопка "Обновить бронирование"
+// Update booking button
 document
   .getElementById("update-booking")
   .addEventListener("click", async () => {
     const email = prompt("Введите ваш email:");
     const date = prompt("Введите дату бронирования (YYYY-MM-DD):");
     const time = prompt("Введите время бронирования (HH:MM):");
-    const field = prompt("Введите поле бронирования:");
+    const field = prompt("Введите текущее поле бронирования:");
+    const newField = prompt("Введите новое поле бронирования:");
 
-    const newDate = prompt("Введите новую дату:");
-    const newTime = prompt("Введите новое время:");
-    const newField = prompt("Введите новое поле:");
-
-    if (!email || !date || !time || !field) {
-      alert("Все поля обязательны для обновления.");
+    if (!email || !date || !time || !field || !newField) {
+      showNotification("Все поля обязательны для обновления.", "error");
       return;
     }
 
@@ -193,25 +194,26 @@ document
           date,
           time,
           field,
-          newDate,
-          newTime,
           newField,
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        alert("Бронирование успешно обновлено");
+        showNotification("Бронирование успешно обновлено", "success");
       } else {
-        alert(`Ошибка: ${data.error || "Не удалось обновить бронирование"}`);
+        showNotification(
+          `Ошибка: ${data.error || "Не удалось обновить бронирование"}`,
+          "error"
+        );
       }
     } catch (error) {
       console.error("Ошибка при обновлении бронирования:", error);
-      alert("Не удалось обновить бронирование.");
+      showNotification("Не удалось обновить бронирование.", "error");
     }
   });
 
-// Кнопка "Удалить бронирование"
+// Delete booking button
 document
   .getElementById("delete-booking")
   .addEventListener("click", async () => {
@@ -221,7 +223,7 @@ document
     const field = prompt("Введите поле бронирования:");
 
     if (!email || !date || !time || !field) {
-      alert("Все поля обязательны для удаления.");
+      showNotification("Все поля обязательны для удаления.", "error");
       return;
     }
 
@@ -237,13 +239,16 @@ document
 
       const data = await response.json();
       if (response.ok) {
-        alert("Бронирование успешно удалено");
+        showNotification("Бронирование успешно удалено", "success");
       } else {
-        alert(`Ошибка: ${data.error || "Не удалось удалить бронирование"}`);
+        showNotification(
+          `Ошибка: ${data.error || "Не удалось удалить бронирование"}`,
+          "error"
+        );
       }
     } catch (error) {
       console.error("Ошибка при удалении бронирования:", error);
-      alert("Не удалось удалить бронирование.");
+      showNotification("Не удалось удалить бронирование.", "error");
     }
   });
 
@@ -287,7 +292,7 @@ function renderPagination(totalPages, currentPage, sort, filter) {
 async function handlePayment(bookingId) {
   const token = localStorage.getItem("token");
   if (!token) {
-    alert("Пожалуйста, войдите в систему");
+    showNotification("Пожалуйста, войдите в систему", "error");
     return;
   }
 
@@ -304,13 +309,13 @@ async function handlePayment(bookingId) {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Оплата прошла успешно!");
+      showNotification("Оплата прошла успешно!", "success");
       fetchBookings(); // Refresh the bookings list
     } else {
-      alert(`Ошибка: ${data.error}`);
+      showNotification(`Ошибка: ${data.error}`, "error");
     }
   } catch (error) {
-    alert("Ошибка при обработке платежа");
+    showNotification("Ошибка при обработке платежа", "error");
     console.error("Error:", error);
   }
 }
