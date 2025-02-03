@@ -42,7 +42,7 @@ app.use("/payment", paymentRoutes);
 app.use("/admin", adminRoutes);
 
 // Move the admin-panel route after the static file middleware but before the generic :page route
-app.get("/admin-panel", authenticateToken, isAdmin, (req, res, next) => {
+app.get("/admin-panel", (req, res, next) => {
   res.sendFile(path.join(publicDir, "admin-panel.html"), (err) => {
     if (err) {
       next(err);
