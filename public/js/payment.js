@@ -27,7 +27,7 @@ async function handleMembershipPurchase(event) {
 
   try {
     const response = await fetch(
-      "http://localhost:8080/payment/gym-membership",
+      "https://web-backend-adpr.onrender.com/payment/gym-membership",
       {
         method: "POST",
         headers: {

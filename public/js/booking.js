@@ -39,7 +39,7 @@ document
     console.log("Sending booking data:", bookingData);
 
     try {
-      const response = await fetch("http://localhost:8080/booking", {
+      const response = await fetch("https://web-backend-adpr.onrender.com/booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +68,7 @@ document
 
 // Получение бронирований с параметрами (сортировка, фильтрация, пагинация)
 async function fetchBookings(page = 1, sort = "", filter = "") {
-  const url = new URL("http://localhost:8080/booking");
+  const url = new URL("https://web-backend-adpr.onrender.com/booking");
   url.searchParams.append("page", page);
   if (sort) url.searchParams.append("sort", sort);
   if (filter) url.searchParams.append("filter", filter);
@@ -183,7 +183,7 @@ document
     }
 
     try {
-      const response = await fetch("http://localhost:8080/booking/update", {
+      const response = await fetch("https://web-backend-adpr.onrender.com/booking/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +228,7 @@ document
     }
 
     try {
-      const response = await fetch("http://localhost:8080/booking/delete", {
+      const response = await fetch("https://web-backend-adpr.onrender.com/booking/delete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -297,7 +297,7 @@ async function handlePayment(bookingId) {
   }
 
   try {
-    const response = await fetch("http://localhost:8080/payment/field", {
+    const response = await fetch("https://web-backend-adpr.onrender.com/payment/field", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

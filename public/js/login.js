@@ -11,7 +11,7 @@ async function checkSession() {
   if (!token) return; // Если токена нет, пропускаем проверку
 
   try {
-    const response = await fetch("http://localhost:8080/auth/verify-session", {
+    const response = await fetch("https://web-backend-adpr.onrender.com/auth/verify-session", {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -45,7 +45,7 @@ loginForm.addEventListener("submit", async (event) => {
   const password = document.getElementById("password").value;
 
   try {
-    const response = await fetch("http://localhost:8080/auth/login", {
+    const response = await fetch("https://web-backend-adpr.onrender.com/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@ verifyOtpButton.addEventListener("click", async () => {
   const email = document.getElementById("email").value;
 
   try {
-    const response = await fetch("http://localhost:8080/auth/verify-otp", {
+    const response = await fetch("https://web-backend-adpr.onrender.com/auth/verify-otp", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -109,7 +109,7 @@ registerButton.addEventListener("click", async () => {
   const password = document.getElementById("password").value;
 
   try {
-    const response = await fetch("http://localhost:8080/auth/register", {
+    const response = await fetch("https://web-backend-adpr.onrender.com/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
