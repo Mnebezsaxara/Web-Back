@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("Token from localStorage:", token); // Debug log
 
   if (!token) {
+    showNotification(
+      "Необходима авторизация для доступа к панели администратора",
+      "error"
+    );
     window.location.href = "/form.html";
     return;
   }
@@ -49,7 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => {
       console.error("Session verification failed:", error);
       localStorage.removeItem("token");
-      window.location.href = "/form.html";
+      showNotification("Сессия истекла. Пожалуйста, войдите снова.", "error");
+      setTimeout(() => {
+        window.location.href = "/form.html";
+      }, 2000);
     });
 
   // Event Listeners
@@ -185,13 +192,14 @@ document.addEventListener("DOMContentLoaded", function () {
         $("#addUserModal").modal("hide");
         loadUsers();
         loadDashboardStats();
+        showNotification("Пользователь успешно сохранен", "success");
       } else {
         const error = await response.json();
-        alert(error.message);
+        showNotification(error.message, "error");
       }
     } catch (error) {
       console.error("Error saving user:", error);
-      alert("Error saving user");
+      showNotification("Ошибка при сохранении пользователя", "error");
     }
   }
 
@@ -216,14 +224,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll(".delete-user").forEach((button) => {
       button.addEventListener("click", async (e) => {
-        if (confirm("Are you sure you want to delete this user?")) {
+        if (confirm("Вы уверены, что хотите удалить этого пользователя?")) {
           const userId = e.target.dataset.id;
-          await fetch(`/admin/users/${userId}`, {
-            method: "DELETE",
-            headers: headers,
-          });
-          loadUsers();
-          loadDashboardStats();
+          try {
+            const response = await fetch(`/admin/users/${userId}`, {
+              method: "DELETE",
+              headers: headers,
+            });
+
+            if (response.ok) {
+              showNotification("Пользователь успешно удален", "success");
+              loadUsers();
+              loadDashboardStats();
+            } else {
+              const error = await response.json();
+              showNotification(error.message, "error");
+            }
+          } catch (error) {
+            showNotification("Ошибка при удалении пользователя", "error");
+          }
         }
       });
     });
@@ -232,13 +251,27 @@ document.addEventListener("DOMContentLoaded", function () {
   function attachBookingActionListeners() {
     document.querySelectorAll(".cancel-booking").forEach((button) => {
       button.addEventListener("click", async (e) => {
-        if (confirm("Are you sure you want to cancel this booking?")) {
+        if (confirm("Вы уверены, что хотите отменить это бронирование?")) {
           const bookingId = e.target.dataset.id;
-          await fetch(`/admin/bookings/${bookingId}/cancel`, {
-            method: "PUT",
-            headers: headers,
-          });
-          loadBookings();
+          try {
+            const response = await fetch(
+              `/admin/bookings/${bookingId}/cancel`,
+              {
+                method: "PUT",
+                headers: headers,
+              }
+            );
+
+            if (response.ok) {
+              showNotification("Бронирование успешно отменено", "success");
+              loadBookings();
+            } else {
+              const error = await response.json();
+              showNotification(error.message, "error");
+            }
+          } catch (error) {
+            showNotification("Ошибка при отмене бронирования", "error");
+          }
         }
       });
     });
@@ -247,12 +280,18 @@ document.addEventListener("DOMContentLoaded", function () {
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
-    window.location.href = "/form.html";
+    showNotification("Вы успешно вышли из системы", "success");
+    setTimeout(() => {
+      window.location.href = "/form.html";
+    }, 2000);
   }
 
   function handleUnauthorized() {
     console.log("Handling unauthorized access"); // Debug log
     localStorage.removeItem("token");
-    window.location.href = "/form.html";
+    showNotification("Сессия истекла. Пожалуйста, войдите снова.", "error");
+    setTimeout(() => {
+      window.location.href = "/form.html";
+    }, 2000);
   }
 });
