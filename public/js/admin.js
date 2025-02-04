@@ -224,25 +224,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll(".delete-user").forEach((button) => {
       button.addEventListener("click", async (e) => {
-        if (confirm("Вы уверены, что хотите удалить этого пользователя?")) {
-          const userId = e.target.dataset.id;
-          try {
-            const response = await fetch(`/admin/users/${userId}`, {
-              method: "DELETE",
-              headers: headers,
-            });
+        const userId = e.target.dataset.id;
+        try {
+          const response = await fetch(`/admin/users/${userId}`, {
+            method: "DELETE",
+            headers: headers,
+          });
 
-            if (response.ok) {
-              showNotification("Пользователь успешно удален", "success");
-              loadUsers();
-              loadDashboardStats();
-            } else {
-              const error = await response.json();
-              showNotification(error.message, "error");
-            }
-          } catch (error) {
-            showNotification("Ошибка при удалении пользователя", "error");
+          if (response.ok) {
+            showNotification("Пользователь успешно удален", "success");
+            loadUsers();
+            loadDashboardStats();
+          } else {
+            const error = await response.json();
+            showNotification(error.message, "error");
           }
+        } catch (error) {
+          showNotification("Ошибка при удалении пользователя", "error");
         }
       });
     });
@@ -251,27 +249,22 @@ document.addEventListener("DOMContentLoaded", function () {
   function attachBookingActionListeners() {
     document.querySelectorAll(".cancel-booking").forEach((button) => {
       button.addEventListener("click", async (e) => {
-        if (confirm("Вы уверены, что хотите отменить это бронирование?")) {
-          const bookingId = e.target.dataset.id;
-          try {
-            const response = await fetch(
-              `/admin/bookings/${bookingId}/cancel`,
-              {
-                method: "PUT",
-                headers: headers,
-              }
-            );
+        const bookingId = e.target.dataset.id;
+        try {
+          const response = await fetch(`/admin/bookings/${bookingId}/cancel`, {
+            method: "PUT",
+            headers: headers,
+          });
 
-            if (response.ok) {
-              showNotification("Бронирование успешно отменено", "success");
-              loadBookings();
-            } else {
-              const error = await response.json();
-              showNotification(error.message, "error");
-            }
-          } catch (error) {
-            showNotification("Ошибка при отмене бронирования", "error");
+          if (response.ok) {
+            showNotification("Бронирование успешно отменено", "success");
+            loadBookings();
+          } else {
+            const error = await response.json();
+            showNotification(error.message, "error");
           }
+        } catch (error) {
+          showNotification("Ошибка при отмене бронирования", "error");
         }
       });
     });
