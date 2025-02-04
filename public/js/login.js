@@ -11,10 +11,13 @@ async function checkSession() {
   if (!token) return; // Если токена нет, пропускаем проверку
 
   try {
-    const response = await fetch("https://web-backend-adpr.onrender.com/auth/verify-session", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await fetch(
+      "https://web-backend-adpr.onrender.com/auth/verify-session",
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     const data = await response.json();
 
@@ -45,14 +48,23 @@ loginForm.addEventListener("submit", async (event) => {
   const password = document.getElementById("password").value;
 
   try {
-    const response = await fetch("https://web-backend-adpr.onrender.com/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": navigator.userAgent, // Передаем deviceId
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await fetch(
+      "https://web-backend-adpr.onrender.com/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": navigator.userAgent,
+          "X-Test-Mode": "true",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+          deviceId: navigator.userAgent,
+        }),
+      }
+    );
 
     const data = await response.json();
 
@@ -63,7 +75,11 @@ loginForm.addEventListener("submit", async (event) => {
       showNotification(data.error || "Ошибка при входе", "error");
     }
   } catch (error) {
-    showNotification("Ошибка при входе в систему", "error");
+    console.error("Login error:", error);
+    showNotification(
+      "Ошибка при входе в систему. Пожалуйста, попробуйте позже.",
+      "error"
+    );
   }
 });
 
@@ -73,14 +89,17 @@ verifyOtpButton.addEventListener("click", async () => {
   const email = document.getElementById("email").value;
 
   try {
-    const response = await fetch("https://web-backend-adpr.onrender.com/auth/verify-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": navigator.userAgent,
-      },
-      body: JSON.stringify({ email, otp }),
-    });
+    const response = await fetch(
+      "https://web-backend-adpr.onrender.com/auth/verify-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": navigator.userAgent,
+        },
+        body: JSON.stringify({ email, otp }),
+      }
+    );
 
     const data = await response.json();
 
@@ -109,11 +128,14 @@ registerButton.addEventListener("click", async () => {
   const password = document.getElementById("password").value;
 
   try {
-    const response = await fetch("https://web-backend-adpr.onrender.com/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await fetch(
+      "https://web-backend-adpr.onrender.com/auth/register",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }
+    );
 
     const data = await response.json();
 

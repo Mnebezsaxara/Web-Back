@@ -47,25 +47,45 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // If in test mode, skip actual email sending
-    if (req.headers["x-test-mode"] === "true") {
-      // Store test OTP in database
-      const otp = "123456";
-      await storeOTP(email, otp);
-      return res.status(200).json({ message: "Test OTP stored" });
-    }
-
-    // Regular email sending logic
-    const otp = generateOTP();
+    // Generate and store OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await storeOTP(email, otp);
-    await sendEmail(email, "Login OTP", `Your OTP is: ${otp}`);
 
-    res.status(200).json({ message: "OTP sent successfully" });
+    // Send OTP via email
+    try {
+      await sendEmail(email, "Login OTP", `Your OTP is: ${otp}`);
+      res
+        .status(200)
+        .json({ message: "OTP отправлен на email. Проверьте почту." });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      res.status(500).json({ error: "Error sending OTP email" });
+    }
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Helper function to store OTP
+async function storeOTP(email, otp) {
+  try {
+    // Delete any existing OTP for this email
+    await Otp.deleteMany({ email });
+
+    // Create new OTP record
+    const otpRecord = new Otp({
+      email,
+      otp,
+      createdAt: new Date(),
+    });
+
+    await otpRecord.save();
+  } catch (error) {
+    console.error("Error storing OTP:", error);
+    throw error;
+  }
+}
 
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
@@ -75,21 +95,25 @@ export const verifyOtp = async (req, res) => {
   }
 
   try {
-    const otpRecord = await Otp.findOne({ email, otp });
+    const otpRecord = await Otp.findOne({
+      email,
+      otp,
+      createdAt: { $gt: new Date(Date.now() - 5 * 60 * 1000) }, // OTP valid for 5 minutes
+    });
+
     if (!otpRecord) {
       return res.status(400).json({ error: "Invalid or expired OTP" });
     }
 
+    // Delete used OTP
     await Otp.deleteMany({ email });
 
     const user = await User.findOne({ email });
     const sessionId = uuidv4();
     const deviceId = req.headers["user-agent"];
 
-    console.log(`✅ Новый sessionId: ${sessionId}, deviceId: ${deviceId}`);
-
-    // Очищаем все старые `sessionId` перед добавлением нового
-    const updateResult = await User.updateOne(
+    // Update user's session
+    await User.updateOne(
       { email },
       {
         $set: {
@@ -99,11 +123,7 @@ export const verifyOtp = async (req, res) => {
       }
     );
 
-    console.log(`🔹 Результат обновления:`, updateResult);
-
-    const updatedUser = await User.findOne({ email });
-    console.log(`🔹 Обновленные activeSessions:`, updatedUser.activeSessions);
-
+    // Generate JWT token
     const token = jwt.sign(
       {
         userId: user._id,
@@ -116,15 +136,13 @@ export const verifyOtp = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    console.log(`🔹 Новый токен: ${token}`);
-
     res.status(200).json({
       message: "Авторизация успешна",
       token,
       role: user.role,
     });
   } catch (error) {
-    console.error("❌ Ошибка при проверке OTP:", error.message);
+    console.error("Error verifying OTP:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
