@@ -60,4 +60,10 @@ const paymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add compound indexes
+paymentSchema.index({ userId: 1, type: 1, status: 1 }); // For user payment history
+paymentSchema.index({ email: 1, paymentDate: -1 }); // For recent payments lookup
+paymentSchema.index({ "membershipDetails.endDate": 1, status: 1 }); // For active memberships
+paymentSchema.index({ bookingId: 1, status: 1 }); // For booking payment status
+
 export default mongoose.model("Payment", paymentSchema);

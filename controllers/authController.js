@@ -49,11 +49,19 @@ export const login = async (req, res) => {
 
     // Generate and store OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`Generated OTP for ${email}:`, otp); // Debug log
+
     await storeOTP(email, otp);
 
     // Send OTP via email
     try {
       await sendEmail(email, "Login OTP", `Your OTP is: ${otp}`);
+      console.log(`OTP email sent to ${email}`);
+
+      // Verify OTP was stored
+      const storedOTP = await Otp.findOne({ email }).sort({ createdAt: -1 });
+      console.log("Stored OTP found:", storedOTP);
+
       res
         .status(200)
         .json({ message: "OTP отправлен на email. Проверьте почту." });
@@ -67,11 +75,14 @@ export const login = async (req, res) => {
   }
 };
 
-// Helper function to store OTP
+// Helper function to store OTP with better error handling and logging
 async function storeOTP(email, otp) {
   try {
     // Delete any existing OTP for this email
-    await Otp.deleteMany({ email });
+    const deletedOTPs = await Otp.deleteMany({ email });
+    console.log(
+      `Deleted ${deletedOTPs.deletedCount} existing OTPs for ${email}`
+    );
 
     // Create new OTP record
     const otpRecord = new Otp({
@@ -80,7 +91,14 @@ async function storeOTP(email, otp) {
       createdAt: new Date(),
     });
 
-    await otpRecord.save();
+    const savedOTP = await otpRecord.save();
+    console.log("OTP stored successfully:", {
+      email,
+      otp,
+      createdAt: savedOTP.createdAt,
+    });
+
+    return savedOTP;
   } catch (error) {
     console.error("Error storing OTP:", error);
     throw error;
@@ -95,11 +113,15 @@ export const verifyOtp = async (req, res) => {
   }
 
   try {
+    console.log(`Verifying OTP for ${email}:`, otp); // Debug log
+
     const otpRecord = await Otp.findOne({
       email,
       otp,
       createdAt: { $gt: new Date(Date.now() - 5 * 60 * 1000) }, // OTP valid for 5 minutes
     });
+
+    console.log("Found OTP record:", otpRecord); // Debug log
 
     if (!otpRecord) {
       return res.status(400).json({ error: "Invalid or expired OTP" });
@@ -107,6 +129,7 @@ export const verifyOtp = async (req, res) => {
 
     // Delete used OTP
     await Otp.deleteMany({ email });
+    console.log(`Deleted used OTP for ${email}`);
 
     const user = await User.findOne({ email });
     const sessionId = uuidv4();

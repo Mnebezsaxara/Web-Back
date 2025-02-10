@@ -13,6 +13,11 @@ const bookingSchema = mongoose.Schema({
   },
 });
 
+// Add compound indexes
+bookingSchema.index({ email: 1, date: 1 }); // For user's bookings on a specific date
+bookingSchema.index({ field: 1, date: 1, time: 1 }, { unique: true }); // Prevent double bookings
+bookingSchema.index({ paymentStatus: 1, date: 1 }); // For filtering bookings by status
+
 const Booking = mongoose.model("Booking", bookingSchema);
 
 export default Booking;
