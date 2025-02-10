@@ -173,33 +173,51 @@ export const registerUser = async (req, res) => {
   if (!validator.isEmail(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
+
   if (!password || password.length < 6) {
-    return res
-      .status(400)
-      .json({ error: "Password must be at least 6 characters long" });
+    return res.status(400).json({
+      error: "Password must be at least 6 characters long",
+    });
   }
 
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
+    // Hash password and create new user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       email,
       password: hashedPassword,
+      role: "user", // Default role
       devices: [],
       activeSessions: [],
     });
+
     await user.save();
 
-    // If in test mode, skip email verification
-    if (req.headers["x-test-mode"] === "true") {
-      return res.status(201).json({ message: "User registered successfully" });
-    }
+    // Generate token for immediate login after registration
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      SECRET_KEY,
+      { expiresIn: "1h" }
+    );
 
-    // Regular email verification logic
-    await sendEmail(email, "Registration OTP", `Your OTP is: ${otp}`);
-
-    res.status(201).json({ message: "User registered successfully" });
+    // Return success response with token
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      role: user.role,
+    });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

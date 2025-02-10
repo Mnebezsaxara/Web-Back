@@ -132,7 +132,10 @@ registerButton.addEventListener("click", async () => {
       "https://web-backend-adpr.onrender.com/auth/register",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Test-Mode": "true",
+        },
         body: JSON.stringify({ email, password }),
       }
     );
@@ -142,6 +145,8 @@ registerButton.addEventListener("click", async () => {
     if (response.ok) {
       showNotification("Регистрация успешна", "success");
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userRole", data.role);
+      window.location.reload();
     } else {
       showNotification("Ошибка: " + data.error, "error");
     }
