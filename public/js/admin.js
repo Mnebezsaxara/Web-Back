@@ -170,6 +170,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  async function loadAdvancedAnalytics() {
+    try {
+      const response = await fetch("/admin/analytics", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await response.json();
+
+      // Update dashboard with analytics
+      updateFieldUsageChart(data.fieldUsageStats);
+      updateRevenueChart(data.paymentTrends.monthlyRevenue);
+      updateMembershipStats(data.paymentTrends.membershipStats);
+      updatePeakHoursHeatmap(data.peakHoursAnalysis);
+    } catch (error) {
+      console.error("Error loading analytics:", error);
+      showNotification("Error loading analytics", "error");
+    }
+  }
+
   async function saveUser() {
     const userId = document.getElementById("userId").value;
     const userData = {
