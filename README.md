@@ -2,39 +2,66 @@ SportLife – Sport Services Booking system
 SportLife is a special web application designed for comfortable booking of sport facilities such as football fields and purchasing gym membership. This way, users can manage their bookings, payments for services and receive notifications about their order status. 
 The primary focus is on integrating MongoDB in the project, providing fast and efficient data processing, as well reliable storage sources information about users,their payments,bookings and so on.
 Key features:
-1.	Simple Registration and Authentication:
-1.	User registration system with email and password
+1)	Simple Registration and Authentication:
+1. 	User registration system with email and password
 2.	Login with two-factor authentication for ensure security (Otp)
 3.	Support using JWT token for authorization and session management system
-2.	Flexible Booking Management:
+   
+2)	Flexible Booking Management:
 1.	Create,modify and delete bookings
 2.	Select specific booking time and football fields
 3.	Ability to filter and sort booking list
-3.	Advanced Payment System:
+   
+3)	Advanced Payment System:
 1.	Purchase gym membership for different periods
 2.	Pay for rent of football fields
 3.	Support for payment status
-4.	Admin Panel:
+   
+4)	Admin Panel:
 1.	Manage users,their payments and bookings
 2.	View overall statistics of bookings and income
 3.	Opportunity to cancel bookings and make a refunds
-Database Operations with MongoDB
-Sporlife is primarily based on MongoDB features like nested documents and relations between collections.
-1.	Nested Documents:
+
+   
+	Database Operations with MongoDB
+	Sporlife is primarily based on MongoDB features like nested documents and relations between collections.
+1)	Nested Documents:
 1.	User profiles (models/User.js) store active sessions, providing users ability to manage logins from different devices without needing separate records.
-•	Payments records (models/Payment.js) contain transaction information,including amount,status and service type. This way payment history and its details can be easily accessed 
-•	Booking details (models/Booking.js) based on reservation either of gym session or football fields rent.
-2.	Relations between the collections:
-•	Each booking is connected to specific user via userId,allowing to easily retrieve all of the user’s booking data
-•	Payments are linked to the bookings by using bookingId, making proper transaction management
-3.	Data optimization:
-•	Use of compound indexes for fast search of data
-•	Implementation of aggregation pipelines for booking and analysis of payment to generate a report
-•	Use of TTL (Time To Live) to automatically remove expired records such as OTP codes or outdated bookings
-4.	Data security:
-•	Passwors that are stored in encrypted form like a bcrypt to prevent data leaks
-•	JWT session tokenization to protects user’s data
-•	API’s access levels restriction in order to prevent attacks on the server
+	Payments records (models/Payment.js) contain transaction information,including amount,status and service type. This way payment history and its details 	can be easily accessed 
+2.	Booking details (models/Booking.js) based on reservation either of gym session or football fields rent.
+
+2)	Relations between the collections:
+	Each booking is connected to specific user via email,allowing to easily retrieve all of the user’s booking data
+	Payments are linked to the bookings by using bookingId, making proper transaction management. Also, payments of subscription related with user by ObjectId.
+
+3)	Data optimization:
+	Use of compound indexes for fast search of data
+	for Bookings:
+	bookingSchema.index({ email: 1, date: 1 }); // For user's bookings on a specific date
+	bookingSchema.index({ field: 1, date: 1, time: 1 }, { unique: true }); // Prevent double bookings
+	bookingSchema.index({ paymentStatus: 1, date: 1 }); // For filtering bookings by status
+
+	for Payments:
+	paymentSchema.index({ userId: 1, type: 1, status: 1 }); // For user payment history
+	paymentSchema.index({ email: 1, paymentDate: -1 }); // For recent payments lookup
+	paymentSchema.index({ "membershipDetails.endDate": 1, status: 1 }); // For active memberships
+	paymentSchema.index({ bookingId: 1, status: 1 }); // For booking payment status
+
+	for Users:
+	userSchema.index({ email: 1, role: 1 }); // For user lookup with role checks
+	userSchema.index({ "activeSessions.sessionId": 1 }); // For session verification
+
+	Implementation of aggregation pipelines for booking and analysis of payment to generate a report
+	![image](https://github.com/user-attachments/assets/e8b40bc0-02ac-47e3-a010-c056a08eb2e4)
+
+	Use of TTL (Time To Live) to automatically remove expired records such as OTP codes or outdated bookings
+	![image](https://github.com/user-attachments/assets/1956ec8f-3e07-4d1e-b002-36db266c6c36)
+
+4)	Data security:
+	Passwors that are stored in encrypted form like a bcrypt to prevent data leaks
+	JWT session tokenization to protects user’s data
+	API’s access levels restriction in order to prevent attacks on the server
+
 Why MongoDB is most suitable choice for Sportlife:
 1.Schema Flexibility and Data Handling
 Sportlife containd different types of data,including user autentiocation details
@@ -42,6 +69,7 @@ bookings,payments and each on have different data and structure. MongoDB allows 
 2.Scalability and High performance
 Sporlife project may experience a growing amount of users, transactions and data in general and MongoDB can help with it. MongoDB gives an opportunity to change and update databases,documents and etc.Moreover it can efficiently distribute data across nodes.
 3.Seamless integrations with Node.js and Express.js that is basically the core of project’s backend. Use of Mongoose ORM simplifies data modeling, validation and ensures efficient interaction between the project and the database
+
 Technologies that were used:
 •	Backend: Node.js, Express.js, MongoDB, Mongoose.
 •	Frontend: HTML, CSS, JavaScript.
@@ -49,7 +77,6 @@ Technologies that were used:
 •	DevOps: Deployment on MongoDB Atlas cloud service and render.
 
 API Routes
-
 •	Authentication
 1.	POST /auth/register – Register a user
 2.	POST /auth/login – Login with OTP
@@ -64,7 +91,6 @@ API Routes
 1.	POST /payment/field – Pay for field booking
 2.	POST /payment/gym – Purchase a gym membership
 3.	GET /payment/history – Retrieve payment history
-
 
 
 				Aggregations that can be added
